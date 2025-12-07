@@ -35,6 +35,16 @@ app.get('/', (req, res) => {
   });
 });
 
+// Health check endpoint for monitoring and keep-alive
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 app.use('/api/users', userRoutes);
 app.use('/api/guests', guestRoutes);
 app.use('/api/items', itemRoutes);
