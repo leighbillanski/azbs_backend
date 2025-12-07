@@ -73,16 +73,16 @@ const getUserWithGuests = async (req, res) => {
 // Create user
 const createUser = async (req, res) => {
   try {
-    const { email, name, role } = req.body;
+    const { email, name, password, role } = req.body;
     
-    if (!email || !name) {
+    if (!email || !name || !password) {
       return res.status(400).json({
         success: false,
-        error: 'Email and name are required'
+        error: 'Email, name, and password are required'
       });
     }
     
-    const user = await User.create({ email, name, role });
+    const user = await User.create({ email, name, password, role });
     
     res.status(201).json({
       success: true,
@@ -107,9 +107,9 @@ const createUser = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { email } = req.params;
-    const { name, role } = req.body;
+    const { name, password, role } = req.body;
     
-    const user = await User.update(email, { name, role });
+    const user = await User.update(email, { name, password, role });
     
     if (!user) {
       return res.status(404).json({
