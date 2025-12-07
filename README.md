@@ -17,7 +17,6 @@ A Node.js/Express REST API backend with PostgreSQL database for managing Users, 
 - `email` (PK) - User's email address
 - `name` - User's name
 - `role` - User's role
-- `photo` - User's photo URL
 
 ### Guest Table
 - `name` (PK) - Guest's name
@@ -97,8 +96,7 @@ The server will start on `http://localhost:3000` (or your configured PORT).
   {
     "email": "user@example.com",
     "name": "John Doe",
-    "role": "admin",
-    "photo": "https://example.com/photo.jpg"
+    "role": "admin"
   }
   ```
 - `PUT /api/users/:email` - Update user

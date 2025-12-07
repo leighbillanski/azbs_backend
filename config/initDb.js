@@ -12,7 +12,6 @@ const createTables = async () => {
         email VARCHAR(255) PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         role VARCHAR(100),
-        photo TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
