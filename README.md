@@ -152,6 +152,13 @@ The server will start on `http://localhost:3000` (or your configured PORT).
 - `POST /api/items/:itemName/unclaim` - Unclaim an item
 - `DELETE /api/items/:itemName` - Delete item
 
+### Admin Endpoints
+- `GET /api/admin/check-database` - Check database connection
+- `GET /api/admin/user-schema` - View users table schema
+- `POST /api/admin/update-user-schema` - Update users table (add number column)
+
+See [ADMIN_ENDPOINTS.md](ADMIN_ENDPOINTS.md) for detailed documentation.
+
 ## Response Format
 
 ### Success Response

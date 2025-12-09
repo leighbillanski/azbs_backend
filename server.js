@@ -7,6 +7,7 @@ const { createTables } = require('./config/initDb');
 const userRoutes = require('./routes/userRoutes');
 const guestRoutes = require('./routes/guestRoutes');
 const itemRoutes = require('./routes/itemRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -30,7 +31,8 @@ app.get('/', (req, res) => {
     endpoints: {
       users: '/api/users',
       guests: '/api/guests',
-      items: '/api/items'
+      items: '/api/items',
+      admin: '/api/admin'
     }
   });
 });
@@ -48,6 +50,7 @@ app.get('/health', (req, res) => {
 app.use('/api/users', userRoutes);
 app.use('/api/guests', guestRoutes);
 app.use('/api/items', itemRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 404 handler
 app.use((req, res) => {
