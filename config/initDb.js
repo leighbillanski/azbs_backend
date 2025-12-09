@@ -11,6 +11,7 @@ const createTables = async () => {
       CREATE TABLE IF NOT EXISTS users (
         email VARCHAR(255) PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
+        number VARCHAR(50),
         password VARCHAR(255) NOT NULL,
         role VARCHAR(100),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

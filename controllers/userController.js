@@ -73,7 +73,7 @@ const getUserWithGuests = async (req, res) => {
 // Create user
 const createUser = async (req, res) => {
   try {
-    const { email, name, password, role } = req.body;
+    const { email, name, number, password, role } = req.body;
     
     if (!email || !name || !password) {
       return res.status(400).json({
@@ -82,7 +82,7 @@ const createUser = async (req, res) => {
       });
     }
     
-    const user = await User.create({ email, name, password, role });
+    const user = await User.create({ email, name, number, password, role });
     
     res.status(201).json({
       success: true,
@@ -107,9 +107,9 @@ const createUser = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { email } = req.params;
-    const { name, password, role } = req.body;
+    const { name, number, password, role } = req.body;
     
-    const user = await User.update(email, { name, password, role });
+    const user = await User.update(email, { name, number, password, role });
     
     if (!user) {
       return res.status(404).json({

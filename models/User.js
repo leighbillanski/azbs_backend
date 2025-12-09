@@ -20,28 +20,29 @@ class User {
 
   // Create new user
   static async create(userData) {
-    const { email, name, password, role } = userData;
+    const { email, name, number, password, role } = userData;
     const result = await pool.query(
-      `INSERT INTO users (email, name, password, role) 
-       VALUES ($1, $2, $3, $4) 
+      `INSERT INTO users (email, name, number, password, role) 
+       VALUES ($1, $2, $3, $4, $5) 
        RETURNING *`,
-      [email, name, password, role]
+      [email, name, number, password, role]
     );
     return result.rows[0];
   }
 
   // Update user
   static async update(email, userData) {
-    const { name, password, role } = userData;
+    const { name, number, password, role } = userData;
     const result = await pool.query(
       `UPDATE users 
        SET name = COALESCE($1, name), 
-           password = COALESCE($2, password),
-           role = COALESCE($3, role),
+           number = COALESCE($2, number),
+           password = COALESCE($3, password),
+           role = COALESCE($4, role),
            updated_at = CURRENT_TIMESTAMP
-       WHERE email = $4 
+       WHERE email = $5 
        RETURNING *`,
-      [name, password, role, email]
+      [name, number, password, role, email]
     );
     return result.rows[0];
   }
