@@ -7,6 +7,7 @@ const { createTables } = require('./config/initDb');
 const userRoutes = require('./routes/userRoutes');
 const guestRoutes = require('./routes/guestRoutes');
 const itemRoutes = require('./routes/itemRoutes');
+const guestItemRoutes = require('./routes/guestItemRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
@@ -32,6 +33,7 @@ app.get('/', (req, res) => {
       users: '/api/users',
       guests: '/api/guests',
       items: '/api/items',
+      claims: '/api/claims',
       admin: '/api/admin'
     }
   });
@@ -50,6 +52,7 @@ app.get('/health', (req, res) => {
 app.use('/api/users', userRoutes);
 app.use('/api/guests', guestRoutes);
 app.use('/api/items', itemRoutes);
+app.use('/api/claims', guestItemRoutes);
 app.use('/api/admin', adminRoutes);
 
 // 404 handler
@@ -82,7 +85,8 @@ const startServer = async () => {
       console.log(`\nAvailable routes:`);
       console.log(`  Users:  http://localhost:${PORT}/api/users`);
       console.log(`  Guests: http://localhost:${PORT}/api/guests`);
-      console.log(`  Items:  http://localhost:${PORT}/api/items\n`);
+      console.log(`  Items:  http://localhost:${PORT}/api/items`);
+      console.log(`  Claims: http://localhost:${PORT}/api/claims\n`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);

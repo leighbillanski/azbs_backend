@@ -160,6 +160,29 @@ The server will start on `http://localhost:3000` (or your configured PORT).
   ```
 - `DELETE /api/items/:itemName` - Delete item
 
+### Claims (Guest-Items) Endpoints
+- `GET /api/claims` - Get all claims
+- `GET /api/claims/guest/:guestName/:guestNumber` - Get all items claimed by a guest
+- `GET /api/claims/item/:itemName` - Get all guests who claimed an item
+- `POST /api/claims` - Create a claim (guest claims an item)
+  ```json
+  {
+    "guest_name": "Guest Name",
+    "guest_number": "123",
+    "item_name": "Item Name",
+    "quantity": 2
+  }
+  ```
+- `PUT /api/claims/:guestName/:guestNumber/:itemName` - Update claim quantity
+  ```json
+  {
+    "quantity": 5
+  }
+  ```
+- `DELETE /api/claims/:guestName/:guestNumber/:itemName` - Delete a specific claim
+- `DELETE /api/claims/guest/:guestName/:guestNumber` - Delete all claims by a guest
+- `DELETE /api/claims/item/:itemName` - Delete all claims for an item
+
 ### Admin Endpoints
 - `GET /api/admin/check-database` - Check database connection
 - `GET /api/admin/user-schema` - View users table schema
