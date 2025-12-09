@@ -29,26 +29,27 @@ class Guest {
 
   // Create new guest
   static async create(guestData) {
-    const { name, number, user_email } = guestData;
+    const { name, number, user_email, going } = guestData;
     const result = await pool.query(
-      `INSERT INTO guests (name, number, user_email) 
-       VALUES ($1, $2, $3) 
+      `INSERT INTO guests (name, number, user_email, going) 
+       VALUES ($1, $2, $3, $4) 
        RETURNING *`,
-      [name, number, user_email]
+      [name, number, user_email, going !== undefined ? going : true]
     );
     return result.rows[0];
   }
 
   // Update guest
   static async update(name, number, guestData) {
-    const { user_email } = guestData;
+    const { user_email, going } = guestData;
     const result = await pool.query(
       `UPDATE guests 
        SET user_email = COALESCE($1, user_email), 
+           going = COALESCE($2, going),
            updated_at = CURRENT_TIMESTAMP
-       WHERE name = $2 AND number = $3 
+       WHERE name = $3 AND number = $4 
        RETURNING *`,
-      [user_email, name, number]
+      [user_email, going, name, number]
     );
     return result.rows[0];
   }

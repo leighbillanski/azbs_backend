@@ -205,10 +205,51 @@ const migrateToNewSchema = async (req, res) => {
   }
 };
 
+// Add going column to guests table
+const addGuestGoingColumn = async (req, res) => {
+  const client = await pool.connect();
+  
+  try {
+    console.log('Adding going column to guests table...');
+    
+    await client.query(`
+      ALTER TABLE guests 
+      ADD COLUMN IF NOT EXISTS going BOOLEAN DEFAULT TRUE;
+    `);
+    
+    // Verify the column was added
+    const result = await client.query(`
+      SELECT column_name, data_type 
+      FROM information_schema.columns 
+      WHERE table_name = 'guests'
+      ORDER BY ordinal_position;
+    `);
+    
+    console.log('Going column added successfully');
+    
+    res.json({
+      success: true,
+      message: 'Guests table updated successfully - going column added',
+      schema: result.rows
+    });
+    
+  } catch (error) {
+    console.error('Error adding going column:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to add going column',
+      details: error.message
+    });
+  } finally {
+    client.release();
+  }
+};
+
 module.exports = {
   updateUserSchema,
   checkDatabase,
   getUserSchema,
-  migrateToNewSchema
+  migrateToNewSchema,
+  addGuestGoingColumn
 };
 
