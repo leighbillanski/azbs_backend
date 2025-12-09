@@ -24,16 +24,20 @@ A Node.js/Express REST API backend with PostgreSQL database for managing Users, 
 - `name` (PK) - Guest's name
 - `number` (PK) - Guest's number
 - `user_email` (FK) - Reference to User
-- `claimed_item` - Item claimed by guest
 
 ### Item Table
 - `item_name` (PK) - Item name
 - `item_photo` - Item photo URL
 - `item_link` - Item link
-- `claimed` - Boolean flag
-- `item_count` - Item count
-- `guest_name` (FK) - Reference to Guest
-- `guest_number` (FK) - Reference to Guest
+- `item_count` - Total quantity available
+- `claimed_count` - Number of items claimed
+
+### Guest_Items Table (Junction Table)
+- `guest_name` (PK, FK) - Reference to Guest
+- `guest_number` (PK, FK) - Reference to Guest
+- `item_name` (PK, FK) - Reference to Item
+- `quantity_claimed` - How many the guest claimed
+- `created_at` - When the item was claimed
 
 ## Prerequisites
 
@@ -116,8 +120,7 @@ The server will start on `http://localhost:3000` (or your configured PORT).
   {
     "name": "Guest Name",
     "number": "123",
-    "user_email": "user@example.com",
-    "claimed_item": "Item Name"
+    "user_email": "user@example.com"
   }
   ```
 - `PUT /api/guests/:name/:number` - Update guest
@@ -125,20 +128,18 @@ The server will start on `http://localhost:3000` (or your configured PORT).
 
 ### Item Endpoints
 - `GET /api/items` - Get all items
-- `GET /api/items/claimed` - Get all claimed items
-- `GET /api/items/unclaimed` - Get all unclaimed items
+- `GET /api/items/claimed` - Get all claimed items (claimed_count > 0)
+- `GET /api/items/unclaimed` - Get all unclaimed items (claimed_count = 0)
 - `GET /api/items/:itemName` - Get item by name
-- `GET /api/items/guest/:guestName/:guestNumber` - Get items for a guest
+- `GET /api/items/:itemName/guests` - Get item with list of guests who claimed it
+- `GET /api/items/guest/:guestName/:guestNumber` - Get all items claimed by a guest
 - `POST /api/items` - Create new item
   ```json
   {
     "item_name": "Item Name",
     "item_photo": "https://example.com/item.jpg",
     "item_link": "https://example.com/product",
-    "claimed": false,
-    "item_count": 1,
-    "guest_name": "Guest Name",
-    "guest_number": "123"
+    "item_count": 10
   }
   ```
 - `PUT /api/items/:itemName` - Update item
@@ -146,16 +147,24 @@ The server will start on `http://localhost:3000` (or your configured PORT).
   ```json
   {
     "guest_name": "Guest Name",
-    "guest_number": "123"
+    "guest_number": "123",
+    "quantity": 2
   }
   ```
 - `POST /api/items/:itemName/unclaim` - Unclaim an item
+  ```json
+  {
+    "guest_name": "Guest Name",
+    "guest_number": "123"
+  }
+  ```
 - `DELETE /api/items/:itemName` - Delete item
 
 ### Admin Endpoints
 - `GET /api/admin/check-database` - Check database connection
 - `GET /api/admin/user-schema` - View users table schema
 - `POST /api/admin/update-user-schema` - Update users table (add number column)
+- `POST /api/admin/migrate-schema` - Migrate to new schema (guest_items junction table)
 
 See [ADMIN_ENDPOINTS.md](ADMIN_ENDPOINTS.md) for detailed documentation.
 

@@ -4,7 +4,44 @@ These endpoints allow you to manage your database schema remotely, which is espe
 
 ## Available Endpoints
 
-### 1. Update User Schema (Add Number Column)
+### 1. Migrate to New Schema
+
+**Endpoint:** `POST /api/admin/migrate-schema`
+
+**Purpose:** Migrates database to new schema with guest_items junction table
+
+**What it does:**
+- Removes `claimed_item` from guests table
+- Removes `claimed`, `guest_name`, `guest_number` from items table
+- Adds `claimed_count` to items table
+- Creates new `guest_items` junction table to track who claimed what
+
+**Usage:**
+
+```bash
+curl -X POST https://your-app-url.onrender.com/api/admin/migrate-schema
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Database schema migrated successfully",
+  "changes": {
+    "guests": "Removed claimed_item column",
+    "items": "Removed claimed, guest_name, guest_number; Added claimed_count",
+    "guest_items": "Created new junction table"
+  },
+  "schemas": {
+    "guests": [...],
+    "items": [...],
+    "guest_items": [...]
+  }
+}
+```
+
+### 2. Update User Schema (Add Number Column)
 
 **Endpoint:** `POST /api/admin/update-user-schema`
 
@@ -66,7 +103,7 @@ https://your-app-url.onrender.com/api/admin/update-user-schema
 }
 ```
 
-### 2. Check Database Connection
+### 3. Check Database Connection
 
 **Endpoint:** `GET /api/admin/check-database`
 
@@ -89,7 +126,7 @@ curl https://your-app-url.onrender.com/api/admin/check-database
 }
 ```
 
-### 3. Get User Table Schema
+### 4. Get User Table Schema
 
 **Endpoint:** `GET /api/admin/user-schema`
 

@@ -29,27 +29,26 @@ class Guest {
 
   // Create new guest
   static async create(guestData) {
-    const { name, number, user_email, claimed_item } = guestData;
+    const { name, number, user_email } = guestData;
     const result = await pool.query(
-      `INSERT INTO guests (name, number, user_email, claimed_item) 
-       VALUES ($1, $2, $3, $4) 
+      `INSERT INTO guests (name, number, user_email) 
+       VALUES ($1, $2, $3) 
        RETURNING *`,
-      [name, number, user_email, claimed_item]
+      [name, number, user_email]
     );
     return result.rows[0];
   }
 
   // Update guest
   static async update(name, number, guestData) {
-    const { user_email, claimed_item } = guestData;
+    const { user_email } = guestData;
     const result = await pool.query(
       `UPDATE guests 
        SET user_email = COALESCE($1, user_email), 
-           claimed_item = COALESCE($2, claimed_item),
            updated_at = CURRENT_TIMESTAMP
-       WHERE name = $3 AND number = $4 
+       WHERE name = $2 AND number = $3 
        RETURNING *`,
-      [user_email, claimed_item, name, number]
+      [user_email, name, number]
     );
     return result.rows[0];
   }
@@ -69,15 +68,17 @@ class Guest {
       `SELECT g.*, 
               json_agg(
                 json_build_object(
-                  'item_name', i.item_name,
+                  'item_name', gi.item_name,
+                  'quantity_claimed', gi.quantity_claimed,
                   'item_photo', i.item_photo,
                   'item_link', i.item_link,
-                  'claimed', i.claimed,
-                  'item_count', i.item_count
+                  'item_count', i.item_count,
+                  'claimed_at', gi.created_at
                 )
-              ) FILTER (WHERE i.item_name IS NOT NULL) as items
+              ) FILTER (WHERE gi.item_name IS NOT NULL) as claimed_items
        FROM guests g
-       LEFT JOIN items i ON g.name = i.guest_name AND g.number = i.guest_number
+       LEFT JOIN guest_items gi ON g.name = gi.guest_name AND g.number = gi.guest_number
+       LEFT JOIN items i ON gi.item_name = i.item_name
        WHERE g.name = $1 AND g.number = $2
        GROUP BY g.name, g.number`,
       [name, number]

@@ -93,7 +93,7 @@ const getGuestsByUser = async (req, res) => {
 // Create guest
 const createGuest = async (req, res) => {
   try {
-    const { name, number, user_email, claimed_item } = req.body;
+    const { name, number, user_email } = req.body;
     
     if (!name || !number) {
       return res.status(400).json({
@@ -102,7 +102,7 @@ const createGuest = async (req, res) => {
       });
     }
     
-    const guest = await Guest.create({ name, number, user_email, claimed_item });
+    const guest = await Guest.create({ name, number, user_email });
     
     res.status(201).json({
       success: true,
@@ -133,9 +133,9 @@ const createGuest = async (req, res) => {
 const updateGuest = async (req, res) => {
   try {
     const { name, number } = req.params;
-    const { user_email, claimed_item } = req.body;
+    const { user_email } = req.body;
     
-    const guest = await Guest.update(name, number, { user_email, claimed_item });
+    const guest = await Guest.update(name, number, { user_email });
     
     if (!guest) {
       return res.status(404).json({

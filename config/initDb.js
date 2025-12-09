@@ -26,7 +26,6 @@ const createTables = async () => {
         name VARCHAR(255) NOT NULL,
         number VARCHAR(50) NOT NULL,
         user_email VARCHAR(255) REFERENCES users(email) ON DELETE CASCADE,
-        claimed_item VARCHAR(255),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (name, number)
@@ -40,16 +39,28 @@ const createTables = async () => {
         item_name VARCHAR(255) PRIMARY KEY,
         item_photo TEXT,
         item_link TEXT,
-        claimed BOOLEAN DEFAULT FALSE,
         item_count INTEGER DEFAULT 0,
-        guest_name VARCHAR(255),
-        guest_number VARCHAR(50),
+        claimed_count INTEGER DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (guest_name, guest_number) REFERENCES guests(name, number) ON DELETE SET NULL
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
     console.log('✓ Items table created/verified');
+
+    // Create Guest_Items junction table (tracks who claimed what)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS guest_items (
+        guest_name VARCHAR(255) NOT NULL,
+        guest_number VARCHAR(50) NOT NULL,
+        item_name VARCHAR(255) NOT NULL,
+        quantity_claimed INTEGER DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (guest_name, guest_number, item_name),
+        FOREIGN KEY (guest_name, guest_number) REFERENCES guests(name, number) ON DELETE CASCADE,
+        FOREIGN KEY (item_name) REFERENCES items(item_name) ON DELETE CASCADE
+      );
+    `);
+    console.log('✓ Guest_Items junction table created/verified');
 
     // Create indexes for better query performance
     await client.query(`
@@ -57,7 +68,11 @@ const createTables = async () => {
     `);
     
     await client.query(`
-      CREATE INDEX IF NOT EXISTS idx_items_guest ON items(guest_name, guest_number);
+      CREATE INDEX IF NOT EXISTS idx_guest_items_guest ON guest_items(guest_name, guest_number);
+    `);
+    
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_guest_items_item ON guest_items(item_name);
     `);
     
     await client.query('COMMIT');

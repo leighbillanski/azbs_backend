@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   getAllItems,
   getItem,
+  getItemWithGuests,
   getItemsByGuest,
   getClaimedItems,
   getUnclaimedItems,
@@ -19,6 +20,7 @@ router.get('/claimed', getClaimedItems);
 router.get('/unclaimed', getUnclaimedItems);
 router.get('/guest/:guestName/:guestNumber', getItemsByGuest);
 router.get('/:itemName', getItem);
+router.get('/:itemName/guests', getItemWithGuests);
 router.post('/', createItem);
 router.put('/:itemName', updateItem);
 router.post('/:itemName/claim', claimItem);

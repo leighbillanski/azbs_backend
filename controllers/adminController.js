@@ -96,9 +96,119 @@ const getUserSchema = async (req, res) => {
   }
 };
 
+// Migrate to new schema (remove claimed_item from guests, restructure items, add guest_items table)
+const migrateToNewSchema = async (req, res) => {
+  const client = await pool.connect();
+  
+  try {
+    console.log('Starting database schema migration...');
+    await client.query('BEGIN');
+    
+    // Step 1: Create guest_items junction table if it doesn't exist
+    console.log('1. Creating guest_items junction table...');
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS guest_items (
+        guest_name VARCHAR(255) NOT NULL,
+        guest_number VARCHAR(50) NOT NULL,
+        item_name VARCHAR(255) NOT NULL,
+        quantity_claimed INTEGER DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (guest_name, guest_number, item_name),
+        FOREIGN KEY (guest_name, guest_number) REFERENCES guests(name, number) ON DELETE CASCADE,
+        FOREIGN KEY (item_name) REFERENCES items(item_name) ON DELETE CASCADE
+      );
+    `);
+    
+    // Step 2: Add claimed_count to items if it doesn't exist
+    console.log('2. Adding claimed_count column to items table...');
+    await client.query(`
+      ALTER TABLE items 
+      ADD COLUMN IF NOT EXISTS claimed_count INTEGER DEFAULT 0;
+    `);
+    
+    // Step 3: Drop old columns from items table
+    console.log('3. Removing old columns from items table...');
+    await client.query(`
+      ALTER TABLE items 
+      DROP COLUMN IF EXISTS claimed CASCADE,
+      DROP COLUMN IF EXISTS guest_name CASCADE,
+      DROP COLUMN IF EXISTS guest_number CASCADE;
+    `);
+    
+    // Step 4: Remove claimed_item from guests table
+    console.log('4. Removing claimed_item column from guests table...');
+    await client.query(`
+      ALTER TABLE guests 
+      DROP COLUMN IF EXISTS claimed_item CASCADE;
+    `);
+    
+    // Step 5: Create indexes
+    console.log('5. Creating indexes...');
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_guest_items_guest ON guest_items(guest_name, guest_number);
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_guest_items_item ON guest_items(item_name);
+    `);
+    
+    await client.query('COMMIT');
+    
+    // Get updated schemas
+    const guestsSchema = await client.query(`
+      SELECT column_name, data_type 
+      FROM information_schema.columns 
+      WHERE table_name = 'guests'
+      ORDER BY ordinal_position;
+    `);
+    
+    const itemsSchema = await client.query(`
+      SELECT column_name, data_type 
+      FROM information_schema.columns 
+      WHERE table_name = 'items'
+      ORDER BY ordinal_position;
+    `);
+    
+    const guestItemsSchema = await client.query(`
+      SELECT column_name, data_type 
+      FROM information_schema.columns 
+      WHERE table_name = 'guest_items'
+      ORDER BY ordinal_position;
+    `);
+    
+    console.log('Migration completed successfully');
+    
+    res.json({
+      success: true,
+      message: 'Database schema migrated successfully',
+      changes: {
+        guests: 'Removed claimed_item column',
+        items: 'Removed claimed, guest_name, guest_number; Added claimed_count',
+        guest_items: 'Created new junction table'
+      },
+      schemas: {
+        guests: guestsSchema.rows,
+        items: itemsSchema.rows,
+        guest_items: guestItemsSchema.rows
+      }
+    });
+    
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Migration failed:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to migrate database schema',
+      details: error.message
+    });
+  } finally {
+    client.release();
+  }
+};
+
 module.exports = {
   updateUserSchema,
   checkDatabase,
-  getUserSchema
+  getUserSchema,
+  migrateToNewSchema
 };
 

@@ -1,4 +1,5 @@
 const Item = require('../models/Item');
+const GuestItem = require('../models/GuestItem');
 
 // Get all items
 const getAllItems = async (req, res) => {
@@ -37,6 +38,32 @@ const getItem = async (req, res) => {
     });
   } catch (error) {
     console.error('Error getting item:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Server error while fetching item'
+    });
+  }
+};
+
+// Get item with list of guests who claimed it
+const getItemWithGuests = async (req, res) => {
+  try {
+    const { itemName } = req.params;
+    const item = await Item.findWithGuests(itemName);
+    
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        error: 'Item not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      data: item
+    });
+  } catch (error) {
+    console.error('Error getting item with guests:', error);
     res.status(500).json({
       success: false,
       error: 'Server error while fetching item'
@@ -103,7 +130,7 @@ const getUnclaimedItems = async (req, res) => {
 // Create item
 const createItem = async (req, res) => {
   try {
-    const { item_name, item_photo, item_link, claimed, item_count, guest_name, guest_number } = req.body;
+    const { item_name, item_photo, item_link, item_count } = req.body;
     
     if (!item_name) {
       return res.status(400).json({
@@ -116,10 +143,7 @@ const createItem = async (req, res) => {
       item_name, 
       item_photo, 
       item_link, 
-      claimed, 
-      item_count, 
-      guest_name, 
-      guest_number 
+      item_count
     });
     
     res.status(201).json({
@@ -134,12 +158,6 @@ const createItem = async (req, res) => {
         error: 'Item with this name already exists'
       });
     }
-    if (error.code === '23503') {
-      return res.status(400).json({
-        success: false,
-        error: 'Guest does not exist'
-      });
-    }
     res.status(500).json({
       success: false,
       error: 'Server error while creating item'
@@ -151,15 +169,12 @@ const createItem = async (req, res) => {
 const updateItem = async (req, res) => {
   try {
     const { itemName } = req.params;
-    const { item_photo, item_link, claimed, item_count, guest_name, guest_number } = req.body;
+    const { item_photo, item_link, item_count } = req.body;
     
     const item = await Item.update(itemName, { 
       item_photo, 
       item_link, 
-      claimed, 
-      item_count, 
-      guest_name, 
-      guest_number 
+      item_count
     });
     
     if (!item) {
@@ -175,12 +190,6 @@ const updateItem = async (req, res) => {
     });
   } catch (error) {
     console.error('Error updating item:', error);
-    if (error.code === '23503') {
-      return res.status(400).json({
-        success: false,
-        error: 'Guest does not exist'
-      });
-    }
     res.status(500).json({
       success: false,
       error: 'Server error while updating item'
@@ -188,11 +197,11 @@ const updateItem = async (req, res) => {
   }
 };
 
-// Claim item
+// Claim item (using GuestItem junction table)
 const claimItem = async (req, res) => {
   try {
     const { itemName } = req.params;
-    const { guest_name, guest_number } = req.body;
+    const { guest_name, guest_number, quantity } = req.body;
     
     if (!guest_name || !guest_number) {
       return res.status(400).json({
@@ -201,8 +210,8 @@ const claimItem = async (req, res) => {
       });
     }
     
-    const item = await Item.claim(itemName, guest_name, guest_number);
-    
+    // Check if item exists
+    const item = await Item.findByName(itemName);
     if (!item) {
       return res.status(404).json({
         success: false,
@@ -210,9 +219,22 @@ const claimItem = async (req, res) => {
       });
     }
     
+    // Check availability
+    const availability = await Item.getAvailability(itemName);
+    const requestedQty = quantity || 1;
+    
+    if (availability.available < requestedQty) {
+      return res.status(400).json({
+        success: false,
+        error: `Not enough items available. Only ${availability.available} remaining.`
+      });
+    }
+    
+    const claim = await GuestItem.claim(guest_name, guest_number, itemName, requestedQty);
+    
     res.json({
       success: true,
-      data: item,
+      data: claim,
       message: 'Item claimed successfully'
     });
   } catch (error) {
@@ -220,7 +242,7 @@ const claimItem = async (req, res) => {
     if (error.code === '23503') {
       return res.status(400).json({
         success: false,
-        error: 'Guest does not exist'
+        error: 'Guest or item does not exist'
       });
     }
     res.status(500).json({
@@ -230,27 +252,34 @@ const claimItem = async (req, res) => {
   }
 };
 
-// Unclaim item
+// Unclaim item (remove from GuestItem junction table)
 const unclaimItem = async (req, res) => {
   try {
     const { itemName } = req.params;
+    const { guest_name, guest_number } = req.body;
     
-    const item = await Item.unclaim(itemName);
-    
-    if (!item) {
-      return res.status(404).json({
+    if (!guest_name || !guest_number) {
+      return res.status(400).json({
         success: false,
-        error: 'Item not found'
+        error: 'Guest name and number are required to unclaim an item'
       });
     }
     
+    const claim = await GuestItem.unclaim(guest_name, guest_number, itemName);
+    
     res.json({
       success: true,
-      data: item,
+      data: claim,
       message: 'Item unclaimed successfully'
     });
   } catch (error) {
     console.error('Error unclaiming item:', error);
+    if (error.message === 'Claim not found') {
+      return res.status(404).json({
+        success: false,
+        error: 'No claim found for this guest and item'
+      });
+    }
     res.status(500).json({
       success: false,
       error: 'Server error while unclaiming item'
@@ -288,6 +317,7 @@ const deleteItem = async (req, res) => {
 module.exports = {
   getAllItems,
   getItem,
+  getItemWithGuests,
   getItemsByGuest,
   getClaimedItems,
   getUnclaimedItems,
