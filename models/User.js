@@ -63,7 +63,8 @@ class User {
               json_agg(
                 json_build_object(
                   'name', g.name,
-                  'number', g.number
+                  'number', g.number,
+                  'going', g.going
                 )
               ) FILTER (WHERE g.name IS NOT NULL) as guests
        FROM users u

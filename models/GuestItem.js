@@ -17,7 +17,7 @@ class GuestItem {
   // Get all guests who claimed a specific item
   static async findByItem(itemName) {
     const result = await pool.query(
-      `SELECT gi.*, g.user_email
+      `SELECT gi.*, g.user_email, g.going
        FROM guest_items gi
        JOIN guests g ON gi.guest_name = g.name AND gi.guest_number = g.number
        WHERE gi.item_name = $1

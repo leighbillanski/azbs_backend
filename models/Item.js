@@ -56,11 +56,13 @@ class Item {
                   'guest_name', gi.guest_name,
                   'guest_number', gi.guest_number,
                   'quantity_claimed', gi.quantity_claimed,
-                  'claimed_at', gi.created_at
+                  'claimed_at', gi.created_at,
+                  'going', g.going
                 )
               ) FILTER (WHERE gi.guest_name IS NOT NULL) as claimed_by
        FROM items i
        LEFT JOIN guest_items gi ON i.item_name = gi.item_name
+       LEFT JOIN guests g ON gi.guest_name = g.name AND gi.guest_number = g.number
        WHERE i.item_name = $1
        GROUP BY i.item_name`,
       [itemName]
