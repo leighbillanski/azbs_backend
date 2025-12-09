@@ -26,7 +26,7 @@ const createTables = async () => {
         name VARCHAR(255) NOT NULL,
         number VARCHAR(50) NOT NULL,
         user_email VARCHAR(255) REFERENCES users(email) ON DELETE CASCADE,
-        going BOOLEAN DEFAULT TRUE,
+        going BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (name, number)

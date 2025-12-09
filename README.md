@@ -24,7 +24,7 @@ A Node.js/Express REST API backend with PostgreSQL database for managing Users, 
 - `name` (PK) - Guest's name
 - `number` (PK) - Guest's number
 - `user_email` (FK) - Reference to User
-- `going` - Whether the guest is attending (boolean, default: true)
+- `going` - Whether the guest is attending (boolean, default: false)
 
 ### Item Table
 - `item_name` (PK) - Item name
@@ -122,9 +122,10 @@ The server will start on `http://localhost:3000` (or your configured PORT).
     "name": "Guest Name",
     "number": "123",
     "user_email": "user@example.com",
-    "going": true
+    "going": false
   }
   ```
+  **Note:** `going` defaults to `false` if not specified
 - `PUT /api/guests/:name/:number` - Update guest
 - `DELETE /api/guests/:name/:number` - Delete guest
 
@@ -191,6 +192,7 @@ The server will start on `http://localhost:3000` (or your configured PORT).
 - `POST /api/admin/update-user-schema` - Update users table (add number column)
 - `POST /api/admin/migrate-schema` - Migrate to new schema (guest_items junction table)
 - `POST /api/admin/add-guest-going` - Add going column to guests table
+- `POST /api/admin/update-going-default` - Change going default to false and update existing guests
 
 See [ADMIN_ENDPOINTS.md](ADMIN_ENDPOINTS.md) for detailed documentation.
 

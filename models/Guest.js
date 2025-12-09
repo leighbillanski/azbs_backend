@@ -34,7 +34,7 @@ class Guest {
       `INSERT INTO guests (name, number, user_email, going) 
        VALUES ($1, $2, $3, $4) 
        RETURNING *`,
-      [name, number, user_email, going !== undefined ? going : true]
+      [name, number, user_email, going !== undefined ? going : false]
     );
     return result.rows[0];
   }

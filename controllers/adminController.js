@@ -214,7 +214,7 @@ const addGuestGoingColumn = async (req, res) => {
     
     await client.query(`
       ALTER TABLE guests 
-      ADD COLUMN IF NOT EXISTS going BOOLEAN DEFAULT TRUE;
+      ADD COLUMN IF NOT EXISTS going BOOLEAN DEFAULT FALSE;
     `);
     
     // Verify the column was added
@@ -229,7 +229,7 @@ const addGuestGoingColumn = async (req, res) => {
     
     res.json({
       success: true,
-      message: 'Guests table updated successfully - going column added',
+      message: 'Guests table updated successfully - going column added (default: false)',
       schema: result.rows
     });
     
@@ -245,11 +245,52 @@ const addGuestGoingColumn = async (req, res) => {
   }
 };
 
+// Update going column default to false and set all existing guests to false
+const updateGuestGoingDefault = async (req, res) => {
+  const client = await pool.connect();
+  
+  try {
+    console.log('Updating going column default to false...');
+    
+    // Change column default to false
+    await client.query(`
+      ALTER TABLE guests 
+      ALTER COLUMN going SET DEFAULT FALSE;
+    `);
+    
+    // Update all existing guests to going = false
+    const updateResult = await client.query(`
+      UPDATE guests 
+      SET going = FALSE 
+      WHERE going = TRUE;
+    `);
+    
+    console.log(`Updated ${updateResult.rowCount} guests to going = false`);
+    
+    res.json({
+      success: true,
+      message: `Going column default changed to false. Updated ${updateResult.rowCount} existing guests.`,
+      updated_count: updateResult.rowCount
+    });
+    
+  } catch (error) {
+    console.error('Error updating going column default:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update going column default',
+      details: error.message
+    });
+  } finally {
+    client.release();
+  }
+};
+
 module.exports = {
   updateUserSchema,
   checkDatabase,
   getUserSchema,
   migrateToNewSchema,
-  addGuestGoingColumn
+  addGuestGoingColumn,
+  updateGuestGoingDefault
 };
 
