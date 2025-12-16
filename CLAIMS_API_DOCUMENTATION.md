@@ -30,7 +30,6 @@ The Claims API (Guest-Items API) manages the many-to-many relationship between g
       "item_name": "Baby Thermometer",
       "quantity_claimed": 2,
       "created_at": "2025-12-09T10:00:00.000Z",
-      "item_photo": "https://example.com/photo.jpg",
       "item_link": "https://example.com/item"
     }
   ]
@@ -66,7 +65,6 @@ curl https://your-app.onrender.com/api/claims
       "item_name": "Baby Thermometer",
       "quantity_claimed": 2,
       "created_at": "2025-12-09T10:00:00.000Z",
-      "item_photo": "https://example.com/photo.jpg",
       "item_link": "https://example.com/item",
       "item_count": 10
     }

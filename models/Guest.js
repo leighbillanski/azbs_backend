@@ -34,7 +34,7 @@ class Guest {
       `INSERT INTO guests (name, number, user_email, going) 
        VALUES ($1, $2, $3, $4) 
        RETURNING *`,
-      [name, number, user_email, going !== undefined ? going : false]
+      [name, number, user_email, going !== undefined ? going : true]
     );
     return result.rows[0];
   }
@@ -71,7 +71,6 @@ class Guest {
                 json_build_object(
                   'item_name', gi.item_name,
                   'quantity_claimed', gi.quantity_claimed,
-                  'item_photo', i.item_photo,
                   'item_link', i.item_link,
                   'item_count', i.item_count,
                   'claimed_at', gi.created_at

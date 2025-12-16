@@ -24,11 +24,10 @@ A Node.js/Express REST API backend with PostgreSQL database for managing Users, 
 - `name` (PK) - Guest's name
 - `number` (PK) - Guest's number
 - `user_email` (FK) - Reference to User
-- `going` - Whether the guest is attending (boolean, default: false)
+- `going` - Whether the guest is attending (boolean, default: true)
 
 ### Item Table
 - `item_name` (PK) - Item name
-- `item_photo` - Item photo URL
 - `item_link` - Item link
 - `item_count` - Total quantity available
 - `claimed_count` - Number of items claimed
@@ -122,10 +121,10 @@ The server will start on `http://localhost:3000` (or your configured PORT).
     "name": "Guest Name",
     "number": "123",
     "user_email": "user@example.com",
-    "going": false
+    "going": true
   }
   ```
-  **Note:** `going` defaults to `false` if not specified
+  **Note:** `going` defaults to `true` if not specified
 - `PUT /api/guests/:name/:number` - Update guest
 - `DELETE /api/guests/:name/:number` - Delete guest
 
@@ -140,7 +139,6 @@ The server will start on `http://localhost:3000` (or your configured PORT).
   ```json
   {
     "item_name": "Item Name",
-    "item_photo": "https://example.com/item.jpg",
     "item_link": "https://example.com/product",
     "item_count": 10
   }
@@ -193,6 +191,8 @@ The server will start on `http://localhost:3000` (or your configured PORT).
 - `POST /api/admin/migrate-schema` - Migrate to new schema (guest_items junction table)
 - `POST /api/admin/add-guest-going` - Add going column to guests table
 - `POST /api/admin/update-going-default` - Change going default to false and update existing guests
+- `POST /api/admin/set-going-default-true` - Change going default to true and update existing guests
+- `POST /api/admin/remove-item-photo` - Remove item_photo column from items table
 
 See [ADMIN_ENDPOINTS.md](ADMIN_ENDPOINTS.md) for detailed documentation.
 
@@ -240,7 +240,7 @@ curl -X POST http://localhost:3000/api/guests \
 ```bash
 curl -X POST http://localhost:3000/api/items \
   -H "Content-Type: application/json" \
-  -d '{"item_name":"Gift Item","item_photo":"https://example.com/photo.jpg","claimed":false,"item_count":1}'
+  -d '{"item_name":"Gift Item","item_link":"https://example.com/product","item_count":1}'
 ```
 
 ## Project Structure

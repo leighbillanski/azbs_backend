@@ -285,12 +285,94 @@ const updateGuestGoingDefault = async (req, res) => {
   }
 };
 
+// Remove item_photo column from items table
+const removeItemPhotoColumn = async (req, res) => {
+  const client = await pool.connect();
+  
+  try {
+    console.log('Removing item_photo column from items table...');
+    
+    await client.query(`
+      ALTER TABLE items 
+      DROP COLUMN IF EXISTS item_photo;
+    `);
+    
+    // Verify the column was removed
+    const result = await client.query(`
+      SELECT column_name, data_type 
+      FROM information_schema.columns 
+      WHERE table_name = 'items'
+      ORDER BY ordinal_position;
+    `);
+    
+    console.log('item_photo column removed successfully');
+    
+    res.json({
+      success: true,
+      message: 'Items table updated successfully - item_photo column removed',
+      schema: result.rows
+    });
+    
+  } catch (error) {
+    console.error('Error removing item_photo column:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to remove item_photo column',
+      details: error.message
+    });
+  } finally {
+    client.release();
+  }
+};
+
+// Update going column default to true and set all existing guests to true
+const setGoingDefaultTrue = async (req, res) => {
+  const client = await pool.connect();
+  
+  try {
+    console.log('Updating going column default to true...');
+    
+    // Change column default to true
+    await client.query(`
+      ALTER TABLE guests 
+      ALTER COLUMN going SET DEFAULT TRUE;
+    `);
+    
+    // Update all existing guests to going = true (optional, only if requested)
+    const updateResult = await client.query(`
+      UPDATE guests 
+      SET going = TRUE 
+      WHERE going = FALSE;
+    `);
+    
+    console.log(`Updated ${updateResult.rowCount} guests to going = true`);
+    
+    res.json({
+      success: true,
+      message: `Going column default changed to true. Updated ${updateResult.rowCount} existing guests.`,
+      updated_count: updateResult.rowCount
+    });
+    
+  } catch (error) {
+    console.error('Error updating going column default:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update going column default',
+      details: error.message
+    });
+  } finally {
+    client.release();
+  }
+};
+
 module.exports = {
   updateUserSchema,
   checkDatabase,
   getUserSchema,
   migrateToNewSchema,
   addGuestGoingColumn,
-  updateGuestGoingDefault
+  updateGuestGoingDefault,
+  removeItemPhotoColumn,
+  setGoingDefaultTrue
 };
 

@@ -126,7 +126,89 @@ curl https://your-app-url.onrender.com/api/admin/check-database
 }
 ```
 
-### 4. Get User Table Schema
+### 4. Remove Item Photo Column
+
+**Endpoint:** `POST /api/admin/remove-item-photo`
+
+**Purpose:** Removes the `item_photo` column from the items table
+
+**Usage:**
+
+```bash
+# Using curl
+curl -X POST https://your-app-url.onrender.com/api/admin/remove-item-photo
+
+# Or just visit in browser
+https://your-app-url.onrender.com/api/admin/remove-item-photo
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Items table updated successfully - item_photo column removed",
+  "schema": [
+    {
+      "column_name": "item_name",
+      "data_type": "character varying"
+    },
+    {
+      "column_name": "item_link",
+      "data_type": "text"
+    },
+    {
+      "column_name": "item_count",
+      "data_type": "integer"
+    },
+    {
+      "column_name": "claimed_count",
+      "data_type": "integer"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp without time zone"
+    },
+    {
+      "column_name": "updated_at",
+      "data_type": "timestamp without time zone"
+    }
+  ]
+}
+```
+
+### 5. Set Going Default to True
+
+**Endpoint:** `POST /api/admin/set-going-default-true`
+
+**Purpose:** Changes the `going` column default to `TRUE` and updates all existing guests with `going = FALSE` to `going = TRUE`
+
+**Usage:**
+
+```bash
+# Using curl
+curl -X POST https://your-app-url.onrender.com/api/admin/set-going-default-true
+
+# Or just visit in browser
+https://your-app-url.onrender.com/api/admin/set-going-default-true
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Going column default changed to true. Updated 5 existing guests.",
+  "updated_count": 5
+}
+```
+
+**What it does:**
+- Changes the default value for the `going` column from `FALSE` to `TRUE`
+- Updates all existing guests who have `going = FALSE` to `going = TRUE`
+- New guests created after this migration will have `going = TRUE` by default
+
+### 6. Get User Table Schema
 
 **Endpoint:** `GET /api/admin/user-schema`
 

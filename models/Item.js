@@ -72,28 +72,27 @@ class Item {
 
   // Create new item
   static async create(itemData) {
-    const { item_name, item_photo, item_link, item_count } = itemData;
+    const { item_name, item_link, item_count } = itemData;
     const result = await pool.query(
-      `INSERT INTO items (item_name, item_photo, item_link, item_count, claimed_count) 
-       VALUES ($1, $2, $3, $4, 0) 
+      `INSERT INTO items (item_name, item_link, item_count, claimed_count) 
+       VALUES ($1, $2, $3, 0) 
        RETURNING *`,
-      [item_name, item_photo, item_link, item_count || 0]
+      [item_name, item_link, item_count || 0]
     );
     return result.rows[0];
   }
 
   // Update item
   static async update(itemName, itemData) {
-    const { item_photo, item_link, item_count } = itemData;
+    const { item_link, item_count } = itemData;
     const result = await pool.query(
       `UPDATE items 
-       SET item_photo = COALESCE($1, item_photo), 
-           item_link = COALESCE($2, item_link),
-           item_count = COALESCE($3, item_count),
+       SET item_link = COALESCE($1, item_link),
+           item_count = COALESCE($2, item_count),
            updated_at = CURRENT_TIMESTAMP
-       WHERE item_name = $4 
+       WHERE item_name = $3 
        RETURNING *`,
-      [item_photo, item_link, item_count, itemName]
+      [item_link, item_count, itemName]
     );
     return result.rows[0];
   }

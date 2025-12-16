@@ -130,7 +130,7 @@ const getUnclaimedItems = async (req, res) => {
 // Create item
 const createItem = async (req, res) => {
   try {
-    const { item_name, item_photo, item_link, item_count } = req.body;
+    const { item_name, item_link, item_count } = req.body;
     
     if (!item_name) {
       return res.status(400).json({
@@ -141,7 +141,6 @@ const createItem = async (req, res) => {
     
     const item = await Item.create({ 
       item_name, 
-      item_photo, 
       item_link, 
       item_count
     });
@@ -169,10 +168,9 @@ const createItem = async (req, res) => {
 const updateItem = async (req, res) => {
   try {
     const { itemName } = req.params;
-    const { item_photo, item_link, item_count } = req.body;
+    const { item_link, item_count } = req.body;
     
     const item = await Item.update(itemName, { 
-      item_photo, 
       item_link, 
       item_count
     });

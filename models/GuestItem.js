@@ -4,7 +4,7 @@ class GuestItem {
   // Get all claimed items for a guest
   static async findByGuest(guestName, guestNumber) {
     const result = await pool.query(
-      `SELECT gi.*, i.item_photo, i.item_link, i.item_count
+      `SELECT gi.*, i.item_link, i.item_count
        FROM guest_items gi
        JOIN items i ON gi.item_name = i.item_name
        WHERE gi.guest_name = $1 AND gi.guest_number = $2
@@ -130,7 +130,7 @@ class GuestItem {
   // Get all claims
   static async findAll() {
     const result = await pool.query(
-      `SELECT gi.*, i.item_photo, i.item_link
+      `SELECT gi.*, i.item_link
        FROM guest_items gi
        JOIN items i ON gi.item_name = i.item_name
        ORDER BY gi.created_at DESC`

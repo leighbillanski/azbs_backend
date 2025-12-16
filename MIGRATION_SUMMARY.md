@@ -109,7 +109,6 @@ claimed_count INTEGER DEFAULT 0
 -- NOW
 CREATE TABLE items (
   item_name VARCHAR(255) PRIMARY KEY,
-  item_photo TEXT,
   item_link TEXT,
   item_count INTEGER DEFAULT 0,
   claimed_count INTEGER DEFAULT 0,  -- NEW
